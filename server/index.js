@@ -2,16 +2,16 @@
 ;(function (app, io, http) {
   http = http.Server(app)
   io = io(http)
-
-  io.on('connection', (socket) => {
+  io.set('transports', ['websocket', 'polling'])
+  io.sockets.on('connection', (socket) => {
     socket.on('send', (message) => {
-      socket.emit('recieve', {
+      io.sockets.emit('recieve', {
         name: socket.id,
         message
       })
     })
   })
-  http.listen(ENV.PORT || 3000)
+  http.listen(3000)
 })(
   require('express')(),
   require('socket.io'),

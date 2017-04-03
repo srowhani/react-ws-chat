@@ -1,71 +1,22 @@
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  ListView
-} from 'react-native';
+import React, {Component} from 'react'
+import {Platform, StyleSheet, View, StatusBar} from 'react-native'
+import Expo, { Icon } from 'expo'
+import { NavigationProvider, StackNavigation } from '@expo/ex-navigation'
+import Router from './navigation/router'
 
-const { Component } = React
-const io = require('socket.io-client')
-
-export default class App extends Component {
-  state = {
-    hasConnected: false,
-    text: '',
-    messages: []
-  }
-
-  constructor () {
-    super(...arguments)
-    const rowHasChanged = (a, b) => a !== b
-    this.state.elements = new ListView.DataSource({rowHasChanged})
-  }
-  componentDidMount (props) {
-    this.socket = socket = io('https://server-vkbzceuxiz.now.sh')
-
-    socket.on('connect', () => this.setState({hasConnected: true}))
-
-    socket.on('recieve', (message) => {
-      this.state.messages.push(message)
-      this.setState({
-        elements: this.state.elements.cloneWithRows(this.state.messages)
-      })
-    })
-
-  }
-  performSubmit () {
-    this.socket.emit('send', this.state.text)
-    this.setState({
-      text: ''
-    })
-  }
-
+class AppContainer extends Component {
   render() {
     return (
       <View style={styles.container}>
+        <NavigationProvider router={Router}>
+          <StackNavigation id='root' initialRoute='home' />
+        </NavigationProvider>
 
-        <TextInput
-          style={styles.input}
-          value={this.state.text}
-          onChangeText={(text) => {
-            this.setState({text})
-          }}
-          editable={this.state.hasConnected}
-          onSubmitEditing={() => this.performSubmit()}
-        />
-
-        <ListView
-          dataSource={this.state.elements}
-          renderRow={(data) => (
-            <Text>
-              {data.name}: {data.message}
-            </Text>
-          )}
-        />
+        {Platform.OS === 'ios' && <StatusBar barStyle='default' />}
+        {Platform.OS === 'android' &&
+          <View style={styles.statusBarUnderlay} />}
       </View>
-    );
+    )
   }
 }
 
@@ -73,13 +24,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  input: {
-    width: '100%',
-    height: 50,
-    marginTop: 50,
-    padding: 10
-  }
-});
+  statusBarUnderlay: {
+    height: 24,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+})
+
+export default AppContainer
